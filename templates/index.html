@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cloud Storage</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/image/cloud-data.png" type="image/x-icon">
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/static/css/style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            color: #333;
+            text-align: left;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .user-info {
+            text-align: right;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        input[type="file"] {
+            padding: 5px;
+            margin-right: 10px;
+        }
+        .file-list {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+        }
+        .file-info {
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 10px 0;
+        }
+        .file-info a {
+            text-decoration: none;
+        }
+        .file-info span {
+            flex: 1;
+        }
+        .file-info::before {
+            content: "|";
+            margin: 0 10px;
+            color: rgba(0, 0, 0, 0.5);
+        }
+        .logout-button {
+            background-color: #f00;
+            color: #fff;
+            padding: 5px 10px;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .logout-button:hover {
+            background-color: #f44;
+        }
+
+
+    </style>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#uploadButton').on('click', function () {
+                var fileInput = $('#fileInput')[0];
+                if (fileInput.files.length > 0) {
+                    var file = fileInput.files[0];
+                    var formData = new FormData();
+                    formData.append('file', file);
+
+                    $.ajax({
+                        url: '/upload',
+                        type: 'POST',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        xhr: function () {
+                            var xhr = new window.XMLHttpRequest();
+                            xhr.upload.addEventListener('progress', function (e) {
+                                if (e.lengthComputable) {
+                                    var percent = (e.loaded / e.total) * 100;
+                                    $('#progressBar').val(percent);
+                                }
+                            });
+                            return xhr;
+                        },
+                        success: function () {
+                            location.reload();
+                        },
+                        error: function () {
+                            alert('Произошла ошибка загрузки.');
+                        }
+                    });
+
+                    $('#progressBar').show();
+                }
+            });
+        });
+    </script>
+    <script>
+    // Обработчик события изменения элемента ввода файла
+    document.getElementById('fileInput').addEventListener('change', function () {
+        var fileName = this.value.split('\\').pop(); // Получаем имя файла из полного пути
+        var fileLabel = document.querySelector('.file-name');
+        if (fileName) {
+            fileLabel.style.display = 'block';
+            fileLabel.textContent = 'Выбранный файл: ' + fileName;
+        } else {
+            fileLabel.style.display = 'none';
+            fileLabel.textContent = '';
+        }
+    });
+</script>
+</head>
+<body>
+    <div class="header">
+        <h1>Cloud Storage</h1>
+        <div class="user-info">
+            {{if .Data.Username}}
+            {{.Data.Username}}!
+            <a class="logout-button" href="/logout">Выйти</a>
+            {{end}}
+        </div>
+    </div>
+<div class="upload-form">
+    <div class="file-upload">
+        <label for="fileInput" class="custom-file-upload">
+            <span>Выберите файл</span>
+            <input type="file" id="fileInput" name="file" />
+        </label>
+        <div class="file-name" style="display: none;"></div>
+    </div>
+    <br>
+    <button id="uploadButton" class="upload-button" type="button">Загрузить</button>
+    <br>
+    <progress id="progressBar" value="0" max="100" style="display: none;"></progress>
+</div>
+    <h2>Загруженные файлы:</h2>
+    <div class="file-list">
+        <ul>
+            <li class="file-info">
+                <span>Название файла</span>
+                <span>Дата</span>
+                <span>Размер файла</span>
+                <span></span>
+            </li>
+            {{range .FileInfo}}
+            <li class="file-info">
+                <span>{{.Name}}</span>
+                <span>{{.UploadTime.Format "02.01.06 15:04"}}</span>
+                <span>{{formatSize .Size}}</span>
+                <span>
+                    <form action="/delete/{{.Name}}" method="post">
+                        <input type="submit" value="Удалить" onclick="return confirm('Вы уверены, что хотите удалить этот файл?')" />
+                    </form>
+                    <form action="/download/{{.Name}}" method="get">
+                        <input type="submit" value="Скачать" />
+                    </form>
+                </span>
+            </li>
+            {{end}}
+        </ul>
+    </div>
+</body>
+</html>
