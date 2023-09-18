@@ -9,15 +9,16 @@ cd cloude-storage-auth
 go mod tidy
 go run cmd/cloud-storage-auth/main.go migrate
 go run cmd/cloud-storage-auth/main.go
+```
 
-Для создания базы данных PostgreSQL на Linux выполните следующие шаги:
+# Для создания базы данных PostgreSQL на Linux выполните следующие шаги:
 
 1. Установите PostgreSQL:
    ```bash
    sudo apt update
    sudo apt install postgresql postgresql-contrib
    ```
-   # Создайте таблицу с помощью SQL-запроса. Вот пример создания таблицы users:
+2. Создайте таблицу с помощью SQL-запроса. Вот пример создания таблицы users:
    ```bash
    # Войдите в PostgreSQL:
    sudo -i -u postgres
@@ -32,11 +33,11 @@ go run cmd/cloud-storage-auth/main.go
    PasswordHash VARCHAR(255) NOT NULL
    );
    ```
-### После создания таблицы вы можете выйти из интерфейса командной строки PostgreSQL:
+3. После создания таблицы вы можете выйти из интерфейса командной строки PostgreSQL:
    ```bash
    \q
    ```
-### После можем запускать сервис 
+4. После можем запускать сервис 
    ```bash
    cd cloude-storage-auth
    go run main.go
